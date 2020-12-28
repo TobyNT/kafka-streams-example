@@ -16,20 +16,15 @@ import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.processor.ProcessorSupplier;
-import org.apache.kafka.streams.state.HostInfo;
 import org.apache.kafka.streams.state.Stores;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.context.WebServerInitializedEvent;
-import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 
 import com.nxt.simplefund.BalanceState;
-import com.nxt.simplefund.service.PortProvider;
+import com.nxt.simplefund.service.HostInfoProvider;
 import com.nxt.simplefund.supplier.BalanceProcessor;
 import com.nxt.simplefund.utility.NetUtils;
 
@@ -42,19 +37,20 @@ import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
 @Configuration
 public class KafkaStreamConfigs {
 
-	private Logger logger = LoggerFactory.getLogger(KafkaStreamConfigs.class);
+	private static final Logger logger = LoggerFactory.getLogger(KafkaStreamConfigs.class);
 
 	private KafkaConfig kafkaConfig;
 
+	@Autowired
 	public KafkaStreamConfigs(KafkaConfig kafkaConfig) {
 		this.kafkaConfig = kafkaConfig;
 	}
 
 	@Bean
-	public KafkaStreams createKafkaStreams(@Autowired HostInfo hostInfo) {
+	public KafkaStreams createKafkaStreams(@Autowired HostInfoProvider hostInfoProvider) {
 		Properties props = new Properties();
 		props.put(StreamsConfig.APPLICATION_ID_CONFIG, kafkaConfig.getApplicationId());
-		props.put(StreamsConfig.APPLICATION_SERVER_CONFIG, NetUtils.hostInfoToUrl(hostInfo));
+		props.put(StreamsConfig.APPLICATION_SERVER_CONFIG, NetUtils.hostInfoToUrl(hostInfoProvider.getHostInfo()));
 		props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaConfig.getBootstrapServersConfig());
 		props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
 		props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
@@ -88,14 +84,6 @@ public class KafkaStreamConfigs {
 		props.put("value.subject.name.strategy", TopicRecordNameStrategy.class);
 
 		return new KafkaProducer(props);
-	}
-
-	@Bean
-	@Lazy
-	public HostInfo createHostInfo(@Autowired ServletWebServerApplicationContext server) {
-		int localWebServerPort = server.getWebServer().getPort();
-		logger.info("===> Server port = {}", localWebServerPort);
-		return new HostInfo("localhost", localWebServerPort);
 	}
 
 	@Bean

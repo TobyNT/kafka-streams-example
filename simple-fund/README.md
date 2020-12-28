@@ -3,11 +3,15 @@
  1. Run application   
     1.1. Standalone
       ```bash
-	      ./gradlew bootRun
+          ./gradlew bootRun
+          Or
+          ./mvnw spring-boot:run
       ```
     1.2. Run with specific port
       ```bash
         ./gradlew bootRun --args='--server.port=8091'
+        Or
+        ./mvnw spring-boot:run -Dspring-boot.run.arguments=--server.port=8091
       ```
 
  2. Upgrade integrated gradle
