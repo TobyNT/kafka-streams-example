@@ -1,0 +1,7 @@
+@namespace("com.nxt.simplefund")
+protocol KafkaInteractiveQueries {
+	record BalanceState {
+		string customerId;
+		decimal(14,2) amount;
+	}
+}

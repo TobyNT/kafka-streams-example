@@ -1,0 +1,14 @@
+@namespace("com.nxt.sample.transferv")
+protocol TransferVQueries {
+	record BlockedAmount {
+		string id;
+		timestamp_ms occurredOn;
+		timestamp_ms expireOn;
+		decimal(14,2) amount;
+	}
+	record BalanceState {
+		string customerId;
+		decimal(14,2) amount;
+		map<BlockedAmount> blockedAmountsById;
+	}
+}

@@ -1,0 +1,6 @@
+@namespace("com.nxt.sample.transferv")
+protocol TransferVQueries {
+    enum Action {
+      ADD, GET, PREPARETOGIVE, PREPARETOTAKE, COMMIT
+    }
+}

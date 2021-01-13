@@ -1,0 +1,24 @@
+@namespace("com.nxt.transferv")
+protocol TransferVQueries {
+    enum Action {
+      ADD, GET, PREPARETOGIVE, PREPARETOTAKE, COMMIT
+    }
+    enum ActionStatus {
+      SUCCESS, FAILURE
+    }
+    record FundsCommand {
+        string id;
+        timestamp_ms occurredOn;
+        string customerId;
+        Action action;
+        decimal(14,2) amount;
+    }
+    record FundsOutcome {
+        string id;
+        timestamp_ms occurredOn;
+        string customerId;
+        Action action;
+        ActionStatus status;
+        decimal(14,2) amount;
+    }
+}

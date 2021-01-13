@@ -1,0 +1,14 @@
+@namespace("com.nxt.sample.transferv")
+protocol TransferVQueries {
+    import idl "Action.avdl";
+    import idl "ActionStatus.avdl";
+
+    record FundsOutcome {
+        string id;
+        timestamp_ms occurredOn;
+        string customerId;
+        Action action;
+        ActionStatus status;
+        decimal(14,2) amount;
+    }
+}

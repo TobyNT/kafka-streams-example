@@ -1,0 +1,11 @@
+kafka:
+  applicationId: 'kafka-interactive-queries-application'
+  bootstrapServersConfig: 'localhost:9092'
+  schemaRegistryUrlConfig: 'http://localhost:8081'
+  
+  topics:
+    fundscommand: 'queuing.funds.command'
+    fundsoutcome: 'queuing.funds.outcome'
+    
+  stateStores:
+    balanceReadModel: 'balance-read-model-state'

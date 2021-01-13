@@ -1,0 +1,6 @@
+@namespace("com.nxt.sample.transferv")
+protocol TransferVQueries {
+    enum ActionStatus {
+      SUCCESS, FAILURE
+    }
+}
