@@ -1,16 +1,20 @@
 package com.nxt.sample.transferv.api.controller;
 
-import java.math.BigDecimal;
 import java.time.Clock;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
-import org.apache.avro.specific.SpecificRecord;
-import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.MediaType;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.requestreply.ReplyingKafkaTemplate;
+import org.springframework.kafka.requestreply.RequestReplyFuture;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,6 +23,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.nxt.sample.transferv.Action;
+import com.nxt.sample.transferv.BalanceOutcome;
+import com.nxt.sample.transferv.BalanceQuery;
 import com.nxt.sample.transferv.FundsCommand;
 import com.nxt.sample.transferv.api.configuration.KafkaConfig;
 import com.nxt.sample.transferv.api.controller.payload.AddFundsPayload;
@@ -34,27 +40,31 @@ public class FundController {
 
 	private KafkaConfig kafkaConfig;
 
-	private KafkaProducer<String, SpecificRecord> kafkaProducer;
+	private ReplyingKafkaTemplate<String, BalanceQuery, BalanceOutcome> replyKafkaTemplate;
 
-	@Autowired
-	public FundController(Clock clock, KafkaConfig kafkaConfig, KafkaProducer<String, SpecificRecord> kafkaProducer) {
+	private KafkaTemplate<String, FundsCommand> fundsKafkaTemplate;
+
+	public FundController(@Autowired Clock clock, @Autowired KafkaConfig kafkaConfig,
+			@Autowired @Qualifier("replyKafkaTemplate") ReplyingKafkaTemplate<String, BalanceQuery, BalanceOutcome> replyKafkaTemplate,
+			@Autowired @Qualifier("fundsKafkaTemplate") KafkaTemplate<String, FundsCommand> fundsKafkaTemplate) {
 		this.clock = clock;
 		this.kafkaConfig = kafkaConfig;
-		this.kafkaProducer = kafkaProducer;
+		this.replyKafkaTemplate = replyKafkaTemplate;
+		this.fundsKafkaTemplate = fundsKafkaTemplate;
 	}
 
-	@PostMapping
+	@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public void addFunds(@RequestBody AddFundsPayload payload) throws InterruptedException, ExecutionException {
-		FundsCommand command = new FundsCommand(UUID.randomUUID().toString(), clock.instant(), payload.getCustomerId(),
-				Action.ADD, payload.getAmount());
+		Action actionAdd = Action.ADD;
 
-		ProducerRecord<String, SpecificRecord> producerRecord = new ProducerRecord<String, SpecificRecord>(
+		FundsCommand command = new FundsCommand(UUID.randomUUID().toString(), clock.instant(), payload.getCustomerId(),
+				actionAdd, payload.getAmount());
+
+		// Create a producer record
+		ProducerRecord<String, FundsCommand> producerRecord = new ProducerRecord<String, FundsCommand>(
 				kafkaConfig.getTopics().getFundscommand(), payload.getCustomerId(), command);
 
-		kafkaProducer.send(producerRecord).get();
-
-		logger.info("Sent {} to topic: {}\n\trecord: {}", command.getSchema().getName(),
-				kafkaConfig.getTopics().getFundscommand(), command);
+		fundsKafkaTemplate.send(producerRecord);
 	}
 
 	@GetMapping
@@ -62,14 +72,30 @@ public class FundController {
 			throws InterruptedException, ExecutionException {
 		logger.info("Get balance of customer #{}", customerId);
 
-		FundsCommand command = new FundsCommand(UUID.randomUUID().toString(), clock.instant(), customerId, Action.GET,
-				BigDecimal.ZERO);
+		BalanceQuery query = new BalanceQuery(clock.instant(), customerId);
 
-		ProducerRecord<String, SpecificRecord> producerRecord = new ProducerRecord<String, SpecificRecord>(
-				kafkaConfig.getTopics().getFundscommand(), customerId, command);
+		// Create a producer record
+		ProducerRecord<String, BalanceQuery> producerRecord = new ProducerRecord<String, BalanceQuery>(
+				kafkaConfig.getTopics().getBalancequery(), customerId, query);
 
-		kafkaProducer.send(producerRecord).get();
+		// Set reply topic in header
+//		producerRecord.headers().add(
+//				new RecordHeader(KafkaHeaders.REPLY_TOPIC, kafkaConfig.getTopics().getBalanceoutcome().getBytes()));
 
-		return new BalancePayload(BigDecimal.ZERO);
+		RequestReplyFuture<String, BalanceQuery, BalanceOutcome> sendAndReceive = replyKafkaTemplate
+				.sendAndReceive(producerRecord);
+
+		// Confirm whether producer complete successfully
+		SendResult<String, BalanceQuery> sendResult = sendAndReceive.getSendFuture().get();
+		sendResult.getProducerRecord().headers()
+				.forEach(header -> logger.info(header.key() + ":" + header.value().toString()));
+		logger.info("Sent {} to topic: {}\n\trecord: {}", query.getSchema().getName(),
+				kafkaConfig.getTopics().getBalancequery(), query);
+
+		// Get consumer record
+		ConsumerRecord<String, BalanceOutcome> consumerRecord = sendAndReceive.get();
+		BalanceOutcome outcome = consumerRecord.value();
+
+		return new BalancePayload(outcome.getAmount());
 	}
 }

@@ -9,6 +9,5 @@ protocol TransferVQueries {
         string customerId;
         Action action;
         ActionStatus status;
-        decimal(14,2) amount;
     }
 }

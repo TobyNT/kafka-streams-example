@@ -23,9 +23,39 @@ public class Topics {
 		this.fundsoutcome = name;
 	}
 
+	private String balancequery;
+
+	public String getBalancequery() {
+		return this.balancequery;
+	}
+
+	public void setBalancequery(String name) {
+		this.balancequery = name;
+	}
+
+	private String balanceoutcome;
+
+	public String getBalanceoutcome() {
+		return this.balanceoutcome;
+	}
+
+	public void setBalanceoutcome(String name) {
+		this.balanceoutcome = name;
+	}
+
+	private String balance;
+
+	public String getBalance() {
+		return this.balance;
+	}
+
+	public void setBalance(String name) {
+		this.balance = name;
+	}
+
 	@Override
 	public String toString() {
 		return new ToStringCreator(this).append("FundsCommand", fundscommand).append("Fundsoutcome", fundsoutcome)
-				.toString();
+				.append("BalanceQuery", balancequery).append("BalanceOutcome", balanceoutcome).toString();
 	}
 }

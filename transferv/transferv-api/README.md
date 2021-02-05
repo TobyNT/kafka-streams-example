@@ -9,9 +9,9 @@
       ```
     1.2. Run with specific port
       ```bash
-        ./gradlew bootRun --args='--server.port=8091'
+        ./gradlew bootRun --args='--server.port=8001'
         Or
-        ./mvnw spring-boot:run -Dspring-boot.run.arguments=--server.port=8091
+        ./mvnw spring-boot:run -Dspring-boot.run.arguments=--server.port=8001
       ```
 
  2. Upgrade integrated gradle
@@ -20,5 +20,5 @@
 
  3. Swagger-ui
     - This project uses openAPI 3 (which is swagger 3)
-    - To access swagger ui : http://localhost:8091/swagger-ui.html
+    - To access swagger ui : http://localhost:8001/swagger-ui.html
 

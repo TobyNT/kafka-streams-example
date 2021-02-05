@@ -6,6 +6,9 @@ kafka:
   topics:
     fundscommand: 'queuing.funds.command'
     fundsoutcome: 'queuing.funds.outcome'
+    balancequery: 'queuing.balance.query'
+    balanceoutcome: 'queuing.balance.outcome'
+    balance: 'queuing.funds.balance'
     
   stateStores:
     balanceReadModel: 'balance-read-model-state'
