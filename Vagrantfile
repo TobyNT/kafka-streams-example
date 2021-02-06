@@ -49,10 +49,13 @@ Vagrant.configure("2") do |config|
   # within the machine from a port on the host machine. In the example below,
   # accessing "localhost:8080" will access port 80 on the guest machine.
   # NOTE: This will enable public access to the opened port  
+  config.vm.network :forwarded_port, guest: 8001, host: 8001
   config.vm.network :forwarded_port, guest: 8080, host: 8080
   config.vm.network :forwarded_port, guest: 8090, host: 8090
   config.vm.network :forwarded_port, guest: 8091, host: 8091
   config.vm.network :forwarded_port, guest: 8092, host: 8092
+  config.vm.network :forwarded_port, guest: 9000, host: 9000
+  config.vm.network :forwarded_port, guest: 10000, host: 10000
   #config.vm.network :forwarded_port, guest: 3361, host: 3361
   #config.vm.network :forwarded_port, guest: 6379, host: 6351
   #printf "\033[1;33mPlease access localhost:8060 for website \033[0m\n"

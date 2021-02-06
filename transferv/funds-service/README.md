@@ -7,10 +7,6 @@
       ```
     1.2. Run with specific port
       ```bash
-        ./mvnw spring-boot:run -Dspring-boot.run.arguments=--server.port=8091
+        ./mvnw spring-boot:run -Dspring-boot.run.arguments=--server.port=8071
       ```
-
- 2. Swagger-ui
-    - This project uses openAPI 3 (which is swagger 3)
-    - To access swagger ui : http://localhost:8091/swagger-ui.html
 

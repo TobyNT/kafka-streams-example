@@ -1,0 +1,7 @@
+@namespace("com.nxt.sample.transferv")
+protocol TransferVQueries {
+    record BalanceQuery {
+        timestamp_ms occurredOn;
+        string customerId;
+    }
+}

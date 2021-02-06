@@ -1,0 +1,8 @@
+@namespace("com.nxt.sample.transferv")
+protocol TransferVQueries {
+    record BalanceOutcome {
+        timestamp_ms occurredOn;
+        string customerId;
+        decimal(14,2) amount;
+    }
+}
